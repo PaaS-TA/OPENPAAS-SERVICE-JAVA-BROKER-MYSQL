@@ -1,53 +1,22 @@
 package org.openpaas.servicebroker.test.service;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
-
-
-
-
-
-
-
-
-
-
-
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 import org.openpaas.servicebroker.common.HttpClientUtils;
 import org.openpaas.servicebroker.common.JsonUtils;
 import org.openpaas.servicebroker.common.ProvisionBody;
 import org.openpaas.servicebroker.common.UpdateProvisionBody;
 import org.openpaas.servicebroker.exception.ServiceBrokerException;
 import org.openpaas.servicebroker.model.CreateServiceInstanceRequest;
-import org.openpaas.servicebroker.mysql.service.impl.MysqlAdminService;
-import org.openpaas.servicebroker.mysql.service.impl.MysqlServiceInstanceService;
 import org.openpaas.servicebroker.service.ServiceInstanceService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.http.*;
 import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.sun.org.apache.xml.internal.security.utils.Base64;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+import static org.junit.Assert.*;
 
 //@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 //@SpringApplicationConfiguration

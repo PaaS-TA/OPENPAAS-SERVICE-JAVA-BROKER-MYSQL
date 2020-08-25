@@ -69,7 +69,7 @@ public class MysqlAdminService {
 	
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
-	
+
 	@Autowired
 	public MysqlAdminService(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
@@ -388,10 +388,10 @@ public class MysqlAdminService {
 	 * @param hostName
 	 * @return
 	 */
-	public String getConnectionString(String database, String username, String password, String hostName) {
+	public String getConnectionString(String database, String username, String password, String hostName, String port) {
 		//mysql://ns4VKg4Xtoy5mNCo:KyNRTVYPJyoqG1xo@10.30.40.163:3306/cf_dd2e0ffe_2bab_4308_b191_7d8814b16933
 		StringBuilder builder = new StringBuilder();
-		builder.append("mysql://"+username+":"+password+"@"+hostName+":3306/"+database);
+		builder.append("mysql://"+username+":"+password+"@"+hostName+":"+port+"/"+database);
 		return builder.toString();
 	}
 	

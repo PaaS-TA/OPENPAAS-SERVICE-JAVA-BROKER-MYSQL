@@ -1,0 +1,37 @@
+# ignore output and build directories
+build/**
+bin/**
+out/**
+
+# Package Files
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# generated gradle directories and files
+.gradle
+.settings
+
+# eclise settings
+.classpath
+.project
+
+# idea settings
+*.iml
+*.ipr
+*.iws
+*.idea
+.idea/*
+
+# remove spring bean configuration
+.spring*
+
+# remove logs
+/logs/
+*.log
+
+
+
