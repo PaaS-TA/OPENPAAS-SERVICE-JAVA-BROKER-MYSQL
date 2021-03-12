@@ -333,6 +333,10 @@ public class MysqlAdminService {
 
 			jdbcTemplate.execute("CREATE USER '"+userId+"' IDENTIFIED BY '"+password+"'");
 			jdbcTemplate.execute("GRANT ALL PRIVILEGES ON "+database+".* TO '"+userId+"'@'%'");
+
+			//CCE 조치 - ed25519 암호화 방식 적용
+			jdbcTemplate.execute("UPDATE mysql.user SET password = '', plugin = 'ed25519', authentication_string = ed25519_password('"+password+"') where user = '"+userId+"' and host = '%'");
+			jdbcTemplate.execute("FLUSH PRIVILEGES");
 			
 			//GRANT ALL ON cf_11b9e707_0e2b_47e3_a21a_fd01a8eb0454.* TO '62519bdc9523157e'@'%' WITH MAX_USER_CONNECTIONS 2;
 			//jdbcTemplate.execute("FLUSH PRIVILEGES");
