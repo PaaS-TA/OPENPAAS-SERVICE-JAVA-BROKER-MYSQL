@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 
 /**
  * Mysql 데이터베이스를 조작하기위한 유틸리티 클래스.
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Service;
  * @author 김한종
  *
  */
+@PropertySource("classpath:datasource.properties")
 @Service
 public class MysqlAdminService {
 
@@ -78,6 +81,9 @@ public class MysqlAdminService {
 	private final RowMapper<ServiceInstance> mapper = new ServiceInstanceRowMapper();
 	
 	private final RowMapper<ServiceInstanceBinding> mapper2 = new ServiceInstanceBindingRowMapper();
+
+	@Autowired
+	private Environment env;
 	
 	/**
 	 * ServiceInstance의 유무를 확인합니다
@@ -333,6 +339,13 @@ public class MysqlAdminService {
 
 			jdbcTemplate.execute("CREATE USER '"+userId+"' IDENTIFIED BY '"+password+"'");
 			jdbcTemplate.execute("GRANT ALL PRIVILEGES ON "+database+".* TO '"+userId+"'@'%'");
+
+			System.out.println("======== cce_enable : "+env.getRequiredProperty("cce_enable"));
+			if("true".equals(env.getRequiredProperty("cce_enable").toLowerCase())){
+				//CCE 조치 - ed25519 암호화 방식 적용
+				jdbcTemplate.execute("UPDATE mysql.user SET password = '', plugin = 'ed25519', authentication_string = ed25519_password('"+password+"') where user = '"+userId+"' and host = '%'");
+				jdbcTemplate.execute("FLUSH PRIVILEGES");				
+			}
 			
 			//GRANT ALL ON cf_11b9e707_0e2b_47e3_a21a_fd01a8eb0454.* TO '62519bdc9523157e'@'%' WITH MAX_USER_CONNECTIONS 2;
 			//jdbcTemplate.execute("FLUSH PRIVILEGES");
