@@ -31,6 +31,7 @@ import org.springframework.core.env.Environment;
  *
  */
 @PropertySource("classpath:datasource.properties")
+@PropertySource("classpath:serviceplan.properties")
 @Service
 public class MysqlAdminService {
 
@@ -59,12 +60,12 @@ public class MysqlAdminService {
 	public static final String SERVICE_BINDING_DELETE_BY_BINDING_ID = "delete from broker.service_binding where binding_id = ?";
 	
 	public static final String SERVICE_BINDING_FIND_USERNAME_BY_BINDING_ID = "select username from broker.service_binding where binding_id = ?";
-	
+
 	// Plan별 MAX_USER_CONNECTIONS 정보
 	public static String planA = "411d0c3e-b086-4a24-b041-0aeef1a819d1";
-	public static int planAconnections = 10;
+	public static int planAconnections;
 	public static String planB = "4a932d9d-9bc5-4a86-937f-e2c14bb9f497";
-	public static int planBconnections = 100;
+	public static int planBconnections;
 	
 	static String DATABASE_PREFIX = "op_";
 	
@@ -76,6 +77,8 @@ public class MysqlAdminService {
 	@Autowired
 	public MysqlAdminService(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
+		planAconnections = Integer.parseInt(env.getRequiredProperty("service.plan.a.con"));
+		planBconnections = Integer.parseInt(env.getRequiredProperty("service.plan.b.con"));
 	}
 		
 	private final RowMapper<ServiceInstance> mapper = new ServiceInstanceRowMapper();
@@ -118,7 +121,7 @@ public class MysqlAdminService {
 	 */
 	public ServiceInstance findById(String id){
 		System.out.println("MysqlAdminService.findById");
-		ServiceInstance serviceInstance = null;;
+		ServiceInstance serviceInstance = null;
 		try {
 			serviceInstance = jdbcTemplate.queryForObject(SERVICE_INSTANCES_FIND_BY_INSTANCE_ID, mapper, id);
 			serviceInstance.withDashboardUrl(getDashboardUrl(serviceInstance.getServiceInstanceId()));
@@ -144,7 +147,7 @@ public class MysqlAdminService {
 	 */
 	public ServiceInstanceBinding findBindById(String id){
 		System.out.println("MysqlAdminService.findBindById");
-		ServiceInstanceBinding serviceInstanceBinding = null;;
+		ServiceInstanceBinding serviceInstanceBinding = null;
 		try {
 			serviceInstanceBinding = jdbcTemplate.queryForObject(SERVICE_BINDING_FIND_BY_BINDING_ID, mapper2, id);
 		} catch (Exception e) {

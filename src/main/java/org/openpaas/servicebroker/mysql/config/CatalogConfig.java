@@ -1,15 +1,18 @@
 package org.openpaas.servicebroker.mysql.config;
 
+import org.openpaas.servicebroker.model.Catalog;
+import org.openpaas.servicebroker.model.Plan;
+import org.openpaas.servicebroker.model.ServiceDefinition;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.openpaas.servicebroker.model.Catalog;
-import org.openpaas.servicebroker.model.Plan;
-import org.openpaas.servicebroker.model.ServiceDefinition;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * Spring boot 구동시 Catalog API 에서 사용하는 Catalog Bean 를 생성하는 클래스
@@ -18,25 +21,39 @@ import org.springframework.context.annotation.Configuration;
  *
  */
 @Configuration
+@PropertySource("classpath:serviceplan.properties")
 public class CatalogConfig {
-	
+
+	@Autowired
+	private Environment env;
+
+	public static String planACon = "";
+	public static String planBCon = "";
+
 	@Bean
-	public Catalog catalog() {		
+	public Catalog catalog() {
+		planACon = env.getRequiredProperty("service.plan.a.con");
+		planBCon = env.getRequiredProperty("service.plan.b.con");
+
 		return new Catalog( Arrays.asList(
 				new ServiceDefinition(
 					"96b9e707-0e2b-47e3-a21a-fd01a8eb0452", 
-					"Mysql-DB", 
+					"Mysql-DB",
 					"A simple mysql implementation", 
 					true, 
 					true,
 					Arrays.asList(
 							new Plan("411d0c3e-b086-4a24-b041-0aeef1a819d1", 
-									"Mysql-Plan1-10con", 
-									"This is a mysql plan1.  10 user connections",
+//									"Mysql-Plan1-10con",
+									env.getRequiredProperty("service.plan.a.name"),
+//									"This is a mysql plan1.  10 user connections",
+									"This is a mysql plan1.  " + planACon + " user connections",
 									getPlanMetadata("A"),true),
 							new Plan("4a932d9d-9bc5-4a86-937f-e2c14bb9f497", 
-									"Mysql-Plan2-100con", 
-									"This is a mysql plan2.  100 user connections",
+//									"Mysql-Plan2-100con",
+									env.getRequiredProperty("service.plan.b.name"),
+//									"This is a mysql plan2.  100 user connections",
+									"This is a mysql plan2.  " + planBCon + " user connections",
 									getPlanMetadata("B"),false)),
 					Arrays.asList("mysql", "document"),
 					getServiceDefinitionMetadata(),
@@ -92,12 +109,12 @@ public class CatalogConfig {
 	private List<String> getBullets(String planType) {
 		if(planType.equals("A")){
 			return Arrays.asList("Shared MysqlDB server", 
-					"10 concurrent connections (not enforced)");
+					planACon + " concurrent connections (not enforced)");
 		}else if(planType.equals("B")){
 			return Arrays.asList("Shared MysqlDB server", 
-					"100 concurrent connections (not enforced)");
+					planBCon + " concurrent connections (not enforced)");
 		}
-		return Arrays.asList("Shared MysqlDB server", 
+		return Arrays.asList("Shared MysqlDB server",
 				"10 concurrent connections (not enforced)");
 	}
 	
