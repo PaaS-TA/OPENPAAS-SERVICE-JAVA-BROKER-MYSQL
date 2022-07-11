@@ -1,14 +1,5 @@
 package org.openpaas.servicebroker.mysql.service.impl;
 
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.openpaas.servicebroker.exception.ServiceBrokerException;
 import org.openpaas.servicebroker.model.CreateServiceInstanceBindingRequest;
 import org.openpaas.servicebroker.model.CreateServiceInstanceRequest;
@@ -18,11 +9,21 @@ import org.openpaas.servicebroker.mysql.exception.MysqlServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.Environment;
+
+import javax.annotation.PostConstruct;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Mysql 데이터베이스를 조작하기위한 유틸리티 클래스.
@@ -77,8 +78,6 @@ public class MysqlAdminService {
 	@Autowired
 	public MysqlAdminService(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
-		planAconnections = Integer.parseInt(env.getRequiredProperty("service.plan.a.con"));
-		planBconnections = Integer.parseInt(env.getRequiredProperty("service.plan.b.con"));
 	}
 		
 	private final RowMapper<ServiceInstance> mapper = new ServiceInstanceRowMapper();
@@ -87,6 +86,12 @@ public class MysqlAdminService {
 
 	@Autowired
 	private Environment env;
+
+	@PostConstruct
+	private void initPlanConnections() {
+		planAconnections = Integer.parseInt(env.getRequiredProperty("service.plan.a.con"));
+		planBconnections = Integer.parseInt(env.getRequiredProperty("service.plan.b.con"));
+	}
 	
 	/**
 	 * ServiceInstance의 유무를 확인합니다
@@ -492,7 +497,7 @@ public class MysqlAdminService {
 		}
 	}
 	
-	// User MAX_USER_CONNECTIONS 설정 조정
+	// User Connections 체크
 	public boolean checkUserConnections(String planId, String id) throws ServiceBrokerException{
 			
 		/* Plan 정보 설정 */
