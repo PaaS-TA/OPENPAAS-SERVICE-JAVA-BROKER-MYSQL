@@ -517,6 +517,10 @@ public class MysqlAdminService {
 		
 		return false;
 	}
+
+	public String getPlanId() {
+		return planA;
+	}
 	
 	private static final class ServiceInstanceRowMapper implements RowMapper<ServiceInstance> {
         @Override
