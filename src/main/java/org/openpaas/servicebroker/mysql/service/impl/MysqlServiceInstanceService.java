@@ -1,9 +1,6 @@
 package org.openpaas.servicebroker.mysql.service.impl;
 
 
-import java.util.List;
-import java.util.Map;
-
 import org.openpaas.servicebroker.exception.ServiceBrokerException;
 import org.openpaas.servicebroker.exception.ServiceInstanceDoesNotExistException;
 import org.openpaas.servicebroker.exception.ServiceInstanceExistsException;
@@ -18,6 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 서비스 인스턴스 서비스가 제공해야하는 메소드를 정의한 인터페이스 클래스인 ServiceInstance를 상속하여
@@ -146,8 +146,16 @@ public class MysqlServiceInstanceService implements ServiceInstanceService {
 		mysqlAdminService.delete(instance.getServiceInstanceId());
 		*/
 		
-		/* 기존 ServiceInstance의 Plan에 변견될경우 다음 처리를 수행합니다. */
+		/* 기존 ServiceInstance의 Plan이 변경될경우 다음 처리를 수행합니다. */
 		if(!instance.getPlanId().equals(updatedInstance.getPlanId())){
+			List<Map<String,Object>> list = mysqlAdminService.findBindByInstanceId(instance.getServiceInstanceId());
+			String planA = mysqlAdminService.getPlanId();
+
+			// instance가 하나라도 bind 되어 있고, plan을 downsizing 하려는 경우 에러를 발생시킵니다.
+			if(list.size() != 0 && !instance.getPlanId().equals(planA) && updatedInstance.getPlanId().equals(planA)) {
+				throw new ServiceInstanceUpdateNotSupportedException("Plan cannot be changed.");
+			}
+
 			// Plan 정보에 따라 해당 Database 사용자의 MAX_USER_CONNECTIONS 정보를 조정합니다.
 			try {
 				mysqlAdminService.setUserConnections(updatedInstance.getPlanId(), instance.getServiceInstanceId());

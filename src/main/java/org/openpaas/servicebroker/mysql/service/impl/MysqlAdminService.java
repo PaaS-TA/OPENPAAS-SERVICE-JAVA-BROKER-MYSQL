@@ -1,14 +1,5 @@
 package org.openpaas.servicebroker.mysql.service.impl;
 
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.openpaas.servicebroker.exception.ServiceBrokerException;
 import org.openpaas.servicebroker.model.CreateServiceInstanceBindingRequest;
 import org.openpaas.servicebroker.model.CreateServiceInstanceRequest;
@@ -18,11 +9,21 @@ import org.openpaas.servicebroker.mysql.exception.MysqlServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.Environment;
+
+import javax.annotation.PostConstruct;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Mysql 데이터베이스를 조작하기위한 유틸리티 클래스.
@@ -31,6 +32,7 @@ import org.springframework.core.env.Environment;
  *
  */
 @PropertySource("classpath:datasource.properties")
+@PropertySource("classpath:serviceplan.properties")
 @Service
 public class MysqlAdminService {
 
@@ -59,12 +61,12 @@ public class MysqlAdminService {
 	public static final String SERVICE_BINDING_DELETE_BY_BINDING_ID = "delete from broker.service_binding where binding_id = ?";
 	
 	public static final String SERVICE_BINDING_FIND_USERNAME_BY_BINDING_ID = "select username from broker.service_binding where binding_id = ?";
-	
+
 	// Plan별 MAX_USER_CONNECTIONS 정보
 	public static String planA = "411d0c3e-b086-4a24-b041-0aeef1a819d1";
-	public static int planAconnections = 10;
+	public static int planAconnections;
 	public static String planB = "4a932d9d-9bc5-4a86-937f-e2c14bb9f497";
-	public static int planBconnections = 100;
+	public static int planBconnections;
 	
 	static String DATABASE_PREFIX = "op_";
 	
@@ -84,6 +86,12 @@ public class MysqlAdminService {
 
 	@Autowired
 	private Environment env;
+
+	@PostConstruct
+	private void initPlanConnections() {
+		planAconnections = Integer.parseInt(env.getRequiredProperty("service.plan.a.con"));
+		planBconnections = Integer.parseInt(env.getRequiredProperty("service.plan.b.con"));
+	}
 	
 	/**
 	 * ServiceInstance의 유무를 확인합니다
@@ -118,7 +126,7 @@ public class MysqlAdminService {
 	 */
 	public ServiceInstance findById(String id){
 		System.out.println("MysqlAdminService.findById");
-		ServiceInstance serviceInstance = null;;
+		ServiceInstance serviceInstance = null;
 		try {
 			serviceInstance = jdbcTemplate.queryForObject(SERVICE_INSTANCES_FIND_BY_INSTANCE_ID, mapper, id);
 			serviceInstance.withDashboardUrl(getDashboardUrl(serviceInstance.getServiceInstanceId()));
@@ -144,7 +152,7 @@ public class MysqlAdminService {
 	 */
 	public ServiceInstanceBinding findBindById(String id){
 		System.out.println("MysqlAdminService.findBindById");
-		ServiceInstanceBinding serviceInstanceBinding = null;;
+		ServiceInstanceBinding serviceInstanceBinding = null;
 		try {
 			serviceInstanceBinding = jdbcTemplate.queryForObject(SERVICE_BINDING_FIND_BY_BINDING_ID, mapper2, id);
 		} catch (Exception e) {
@@ -489,7 +497,7 @@ public class MysqlAdminService {
 		}
 	}
 	
-	// User MAX_USER_CONNECTIONS 설정 조정
+	// User Connections 체크
 	public boolean checkUserConnections(String planId, String id) throws ServiceBrokerException{
 			
 		/* Plan 정보 설정 */
@@ -508,6 +516,10 @@ public class MysqlAdminService {
 		if(totalConnections <= totalUsers) return true;
 		
 		return false;
+	}
+
+	public String getPlanId() {
+		return planA;
 	}
 	
 	private static final class ServiceInstanceRowMapper implements RowMapper<ServiceInstance> {
