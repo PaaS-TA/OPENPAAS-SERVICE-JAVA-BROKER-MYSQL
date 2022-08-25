@@ -350,9 +350,16 @@ public class MysqlAdminService {
 
 			System.out.println("======== cce_enable : "+env.getRequiredProperty("cce_enable"));
 			if("true".equals(env.getRequiredProperty("cce_enable").toLowerCase())){
-				//CCE 조치 - ed25519 암호화 방식 적용
-				jdbcTemplate.execute("UPDATE mysql.user SET password = '', plugin = 'ed25519', authentication_string = ed25519_password('"+password+"') where user = '"+userId+"' and host = '%'");
-				jdbcTemplate.execute("FLUSH PRIVILEGES");				
+
+				if("mysql".equals(env.getRequiredProperty("database_type").toLowerCase())){
+					//CCE 조치 - sha256 암호화 방식 적용(mysql)
+					jdbcTemplate.execute("alter user '"+userId+"'@'%' identified with sha256_password by '"+password +"'");
+					jdbcTemplate.execute("FLUSH PRIVILEGES");				
+				}else if("mariadb".equals(env.getRequiredProperty("database_type").toLowerCase())){
+                                        //CCE 조치 - ed25519 암호화 방식 적용(mariadb)
+                                        jdbcTemplate.execute("UPDATE mysql.user SET password = '', plugin = 'ed25519', authentication_string = ed25519_password('"+password+"') where user = '"+userId+"' and host = '%'");
+                                        jdbcTemplate.execute("FLUSH PRIVILEGES");
+                                }
 			}
 			
 			//GRANT ALL ON cf_11b9e707_0e2b_47e3_a21a_fd01a8eb0454.* TO '62519bdc9523157e'@'%' WITH MAX_USER_CONNECTIONS 2;

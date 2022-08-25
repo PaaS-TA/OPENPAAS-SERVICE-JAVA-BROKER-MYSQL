@@ -75,6 +75,7 @@ dependencies {
         exclude group: 'net.java.dev.jna'
     }
     compile "org.springframework:spring-jdbc:4.0.0.M3"
+    compile 'mysql:mysql-connector-java:8.0.28'
 
 }
 
