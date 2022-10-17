@@ -96,7 +96,7 @@ public class MysqlServiceInstanceBindingService implements ServiceInstanceBindin
 		String username = mysqlAdminService.getUsername(request.getBindingId());
 		// 사용자 비밀번호를 생성합니다.
 		//String password = UUID.randomUUID().toString().replace("-", "");
-		String password = mysqlAdminService.getUsername(request.getServiceInstanceId());
+		String password = mysqlAdminService.getUsername(username);
 		
 		/* 새로운 사용자명이 존재하는지 검증합니다.*/
 		if (mysqlAdminService.isExistsUser(username)) {
